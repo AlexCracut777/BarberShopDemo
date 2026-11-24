@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Shop view · Walnut &amp; Brass</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Manrope:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* VOICE: the barbers' own diary, calm and quick to read between clients.
+   IDEA: a paper appointment book laid flat: one column per chair, the day running down the page.
+   PICTURE: the day grid itself, appointments as brass-edged slips, blocked time hatched.
+   COLOUR and TYPE: same walnut-black, cognac and brass as the shop site; Cormorant Garamond + Manrope.
+   LAYOUT: header with day controls, three totals, then the grid at full width. */
+:root{color-scheme:dark;--bg:#110d0a;--panel:#19130f;--panel2:#211912;--ink:#f1e8da;--muted:#b8a892;--dim:#8f8170;--brass:#c9a45b;--line:rgba(201,164,91,.2);--serif:"Cormorant Garamond",Georgia,serif;--sans:Manrope,system-ui,sans-serif;--ppm:1.25px}
+:root[data-theme=light],:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans);overflow-x:clip;-webkit-font-smoothing:antialiased}
+a{color:inherit}
+button{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:2px solid var(--brass);outline-offset:2px}
+header{display:flex;flex-wrap:wrap;align-items:center;gap:14px 24px;padding:16px max(4vw,16px);border-bottom:1px solid var(--line);background:var(--panel)}
+.mark{font:600 24px/1 var(--serif);text-decoration:none;white-space:nowrap}.mark b{color:var(--brass)}
+.tag{font-size:13px;color:var(--dim);border:1px solid var(--line);border-radius:999px;padding:4px 10px}
+.back{margin-left:auto;font-size:14px;color:var(--muted);text-decoration:none}
+.back:hover{color:var(--ink)}
+main{padding:22px max(4vw,16px) 48px;max-width:1240px;margin:0 auto}
+.bar{display:flex;flex-wrap:wrap;align-items:center;gap:12px 16px;margin-bottom:18px}
+.bar h1{font:600 clamp(30px,4vw,42px)/1.05 var(--serif);margin:0;margin-right:auto}
+.nav{display:flex;gap:6px}
+.nav button,.nav input{min-height:44px;border-radius:8px;border:1px solid rgba(201,164,91,.3);background:#130e0b;padding:0 14px}
+.nav input{color:var(--ink);font:15px var(--sans)}
+.nav button:hover{border-color:var(--brass)}
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:10px;overflow:hidden;margin-bottom:18px}
+.stats div{background:var(--panel);padding:14px 16px}
+.stats b{display:block;font:600 30px/1.1 var(--serif);color:var(--ink)}
+.stats span{font-size:13px;color:var(--dim)}
+.hint{font-size:13px;color:var(--dim);margin:0 0 12px}
+.scroll{overflow-x:auto;border:1px solid var(--line);border-radius:10px;background:var(--panel)}
+.grid{display:grid;grid-template-columns:64px repeat(var(--cols),minmax(180px,1fr));min-width:640px}
+.colh{position:sticky;top:0;z-index:3;display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--panel2);border-bottom:1px solid var(--line);border-left:1px solid var(--line)}
+.colh.gut{border-left:0}
+.av{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;overflow:hidden;background:radial-gradient(120% 90% at 30% 20%,#5b3b22,#24180f 70%);color:var(--brass);font:600 18px/1 var(--serif);flex:none}
+.av img{width:100%;height:100%;object-fit:cover}
+.colh b{display:block;font-size:15px}.colh small{color:var(--dim);font-size:12px}
+.gutter{position:relative;border-right:0}
+.gutter span{position:absolute;right:8px;transform:translateY(-50%);font-size:12px;color:var(--dim)}
+.col{position:relative;border-left:1px solid var(--line);cursor:copy;background-position:0 14px;background-image:repeating-linear-gradient(to bottom,transparent 0,transparent calc(var(--ppm)*60 - 1px),rgba(201,164,91,.13) calc(var(--ppm)*60 - 1px),rgba(201,164,91,.13) calc(var(--ppm)*60))}
+.col.off{cursor:default;background:repeating-linear-gradient(135deg,transparent 0 10px,rgba(255,255,255,.03) 10px 20px)}
+.col.off::after{content:"Day off";position:absolute;top:20px;left:0;right:0;text-align:center;color:var(--dim)}
+.ap{position:absolute;left:6px;right:6px;border-radius:6px;padding:5px 8px;overflow:hidden;text-align:left;border:0;border-left:3px solid var(--brass);background:#2c2117;font-size:12.5px;line-height:1.3;z-index:1}
+.ap:hover{background:#3a2b1e;z-index:2}
+.ap b{display:block;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ap span{color:var(--muted);white-space:nowrap}
+.ap.new{border-left-color:#7fd1a8;background:#1d2a22}
+.ap.shop{border-left-color:#d58a5a}
+.ap.blk{border-left-color:#6d6254;background:repeating-linear-gradient(135deg,#1c1612 0 8px,#231b15 8px 16px);color:var(--muted)}
+.now{position:absolute;left:0;right:0;height:2px;background:#e8a27c;z-index:2;pointer-events:none}
+.now::before{content:"";position:absolute;left:-4px;top:-3px;width:8px;height:8px;border-radius:50%;background:#e8a27c}
+.closed{padding:60px 20px;text-align:center;color:var(--muted)}
+.closed b{display:block;font:600 30px var(--serif);color:var(--ink);margin-bottom:6px}
+.key{display:flex;flex-wrap:wrap;gap:8px 18px;margin-top:14px;font-size:13px;color:var(--dim)}
+.key i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+.foot{margin-top:24px;font-size:13px;color:var(--dim);display:flex;flex-wrap:wrap;gap:10px 20px;align-items:center}
+.foot button{background:none;border:1px solid var(--line);border-radius:8px;padding:8px 12px;min-height:40px;color:var(--muted)}
+/* modal */
+.veil{position:fixed;inset:0;background:rgba(5,4,3,.72);display:none;place-items:center;z-index:20;padding:16px}
+.veil.open{display:grid}
+.modal{width:min(440px,100%);background:var(--panel2);border:1px solid rgba(201,164,91,.35);border-radius:14px;padding:22px}
+.modal h2{font:600 28px/1.1 var(--serif);margin:0 0 4px}
+.modal .sub{color:var(--muted);margin:0 0 16px}
+.seg{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:14px}
+.seg button{min-height:44px;border-radius:8px;border:1px solid rgba(201,164,91,.3);background:#130e0b}
+.seg button.on{background:var(--brass);color:#16100b;border-color:var(--brass);font-weight:600}
+label{display:grid;gap:6px;font-size:13px;color:var(--muted);margin-bottom:12px}
+input,select{font:16px var(--sans);color:var(--ink);background:#130e0b;border:1px solid rgba(201,164,91,.3);border-radius:6px;min-height:46px;padding:0 12px;width:100%}
+input:focus,select:focus{border-color:var(--brass);outline:none}
+.err{color:#e8a27c;font-size:14px;min-height:1.2em;margin:0 0 10px}
+.acts{display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end}
+.btn{min-height:46px;padding:0 18px;border-radius:999px;border:1px solid var(--brass);background:transparent;font-weight:600}
+.btn.solid{background:var(--brass);color:#16100b}
+.btn.warn{border-color:#e8a27c;color:#e8a27c}
+dl{display:grid;grid-template-columns:auto 1fr;gap:6px 16px;margin:0 0 16px}
+dt{color:var(--dim)}dd{margin:0}
+@media(max-width:700px){.stats{grid-template-columns:repeat(2,minmax(0,1fr))}.back{margin-left:0}}
+</style>
+</head>
+<body>
+<header>
+  <a class="mark" href="index.html">Walnut <b>&amp;</b> Brass</a>
+  <span class="tag">Shop view · demo, no login</span>
+  <a class="back" href="index.html#book">← Back to the website</a>
+</header>
+<main>
+  <div class="bar">
+    <h1 id="dayTitle">Today</h1>
+    <div class="nav">
+      <button id="prev" aria-label="Previous day">←</button>
+      <button id="todayBtn">Today</button>
+      <button id="next" aria-label="Next day">→</button>
+      <input type="date" id="pick" aria-label="Go to date">
+    </div>
+  </div>
+  <div class="stats" id="stats"></div>
+  <p class="hint">Tap an empty space to add a walk-in, a phone booking or blocked time. Tap an appointment to see it or cancel it.</p>
+  <div id="board"></div>
+  <div class="key">
+    <span><i style="background:#2c2117;border-left:3px solid var(--brass)"></i>Booked online</span>
+    <span><i style="background:#1d2a22;border-left:3px solid #7fd1a8"></i>Booked on the website in this browser</span>
+    <span><i style="background:#2c2117;border-left:3px solid #d58a5a"></i>Walk-in or phone</span>
+    <span><i style="background:#231b15;border-left:3px solid #6d6254"></i>Blocked</span>
+  </div>
+  <div class="foot">
+    <span>Demo data: the existing bookings are made up. Anything you add is saved in this browser only.</span>
+    <button id="resetBtn">Clear my demo changes</button>
+  </div>
+</main>
+
+<div class="veil" id="veil" role="dialog" aria-modal="true" aria-labelledby="mTitle">
+  <div class="modal" id="modal"></div>
+</div>
+
+<script src="booking.js"></script>
+<script>
+{
+  const E = WB.esc;
+  const board = document.getElementById('board');
+  const veil = document.getElementById('veil');
+  const modal = document.getElementById('modal');
+  const PPM = 1.25, PAD = 14;
+  let day = WB.today();
+  let draft = null;
+
+  const shortDay = k => WB.dayLabel(k, {weekday:'long', day:'numeric', month:'long'});
+  const av = b => b.photo ? `<span class="av"><img src="${E(b.photo)}" alt=""></span>` : `<span class="av" aria-hidden="true">${E(WB.initials(b.name))}</span>`;
+  const nowMin = () => { const d = new Date(); return d.getHours() * 60 + d.getMinutes(); };
+
+  const render = () => {
+    document.getElementById('dayTitle').textContent = day === WB.today() ? `Today, ${WB.dayLabel(day, {day:'numeric', month:'long'})}` : shortDay(day);
+    document.getElementById('pick').value = day;
+    const h = WB.hoursFor(day);
+    const items = WB.BARBERS.flatMap(b => WB.dayItems(day, b.id));
+    const appts = items.filter(x => x.kind === 'booking');
+    const mins = appts.reduce((a, x) => a + x.dur, 0);
+    const takings = appts.reduce((a, x) => a + WB.service(x.service).p, 0);
+    let freeSlots = 0;
+    if (h) freeSlots = WB.slots(day, 'any', 30, true).filter(s => day !== WB.today() || s.t > nowMin()).reduce((a, s) => a + s.free.length, 0);
+    document.getElementById('stats').innerHTML = [
+      [appts.length, 'Appointments'], [`${Math.floor(mins / 60)}h ${mins % 60}m`, 'Booked time'],
+      [`€${takings}`, 'Expected takings'], [freeSlots, 'Free 30-min slots left']
+    ].map(s => `<div><b>${s[0]}</b><span>${s[1]}</span></div>`).join('');
+
+    if (!h) { board.innerHTML = `<div class="closed"><b>Closed</b>The shop is closed on ${WB.dayLabel(day, {weekday:'long'})}s.</div>`; return; }
+    const [open, close] = h, height = (close - open) * PPM + PAD * 2;
+    let html = `<div class="scroll"><div class="grid" style="--cols:${WB.BARBERS.length}">`;
+    html += `<div class="colh gut"></div>` + WB.BARBERS.map(b => {
+      const n = WB.dayItems(day, b.id).filter(x => x.kind === 'booking').length;
+      return `<div class="colh">${av(b)}<span><b>${E(b.name)}</b><small>${WB.works(b, day) ? n + ' booked' : 'Day off'}</small></span></div>`;
+    }).join('');
+    html += `<div class="gutter" style="height:${height}px">`;
+    for (let t = open; t <= close; t += 60) html += `<span style="top:${(t - open) * PPM + PAD}px">${WB.hhmm(t)}</span>`;
+    html += `</div>`;
+    const nm = nowMin();
+    const nowLine = day === WB.today() && nm > open && nm < close ? `<div class="now" style="top:${(nm - open) * PPM + PAD}px"></div>` : '';
+    for (const b of WB.BARBERS) {
+      if (!WB.works(b, day)) { html += `<div class="col off" style="height:${height}px"></div>`; continue; }
+      html += `<div class="col" data-bar="${b.id}" style="height:${height}px">${nowLine}`;
+      for (const x of WB.dayItems(day, b.id)) {
+        const top = (x.start - open) * PPM + PAD, hgt = Math.max(x.dur * PPM - 2, 18);
+        const time = `${WB.hhmm(x.start)}–${WB.hhmm(x.start + x.dur)}`;
+        if (x.kind === 'block') html += `<button class="ap blk" data-id="${E(x.id)}" style="top:${top}px;height:${hgt}px"><b>${E(x.reason)}</b><span>${time}</span></button>`;
+        else {
+          const cls = x.source === 'shop' ? 'shop' : x.id.startsWith('WB-') ? 'new' : '';
+          html += `<button class="ap ${cls}" data-id="${E(x.id)}" style="top:${top}px;height:${hgt}px"><b>${E(x.name)}</b><span>${time} · ${E(WB.service(x.service).n)}</span></button>`;
+        }
+      }
+      html += `</div>`;
+    }
+    board.innerHTML = html + `</div></div>`;
+  };
+
+  /* ---------- modal ---------- */
+  const openModal = html => { modal.innerHTML = html; veil.classList.add('open'); const f = modal.querySelector('input,select,button'); if (f) f.focus(); };
+  const closeModal = () => { veil.classList.remove('open'); draft = null; };
+  veil.addEventListener('click', e => { if (e.target === veil) closeModal(); });
+  addEventListener('keydown', e => { if (e.key === 'Escape' && veil.classList.contains('open')) closeModal(); });
+
+  const addForm = () => {
+    const b = WB.barber(draft.barber);
+    const isBlock = draft.type === 'block';
+    return `<h2 id="mTitle">Add at ${WB.hhmm(draft.start)}</h2><p class="sub">${E(b.name)} · ${E(shortDay(day))}</p>
+      <div class="seg"><button data-type="booking" class="${isBlock ? '' : 'on'}">Walk-in or phone</button><button data-type="block" class="${isBlock ? 'on' : ''}">Block time</button></div>
+      <label>Start time<select id="mStart">${timeOptions()}</select></label>
+      ${isBlock ? `<label>How long<select id="mDur">${[15,30,45,60,90,120,180,240].map(m => `<option value="${m}">${m < 60 ? m + ' min' : m === 60 ? '1 hour' : m / 60 + ' hours'}</option>`).join('')}</select></label>
+        <label>Reason<input id="mReason" placeholder="Lunch, holiday, training…" maxlength="40"></label>`
+      : `<label>Service<select id="mSvc">${WB.SERVICES.map(s => `<option value="${s.id}">${E(s.n)} · ${s.m} min · €${s.p}</option>`).join('')}</select></label>
+        <label>Client name<input id="mName" autocomplete="off" maxlength="40"></label>
+        <label>Mobile (optional)<input id="mPhone" type="tel" inputmode="tel" maxlength="20"></label>`}
+      <p class="err" id="mErr" role="alert"></p>
+      <div class="acts"><button class="btn" data-close>Cancel</button><button class="btn solid" data-save>Save</button></div>`;
+  };
+  const timeOptions = () => {
+    const [open, close] = WB.hoursFor(day); let o = '';
+    for (let t = open; t < close; t += WB.STEP) o += `<option value="${t}" ${t === draft.start ? 'selected' : ''}>${WB.hhmm(t)}</option>`;
+    return o;
+  };
+
+  board.addEventListener('click', e => {
+    const ap = e.target.closest('.ap');
+    if (ap) { showItem(ap.dataset.id); return; }
+    const col = e.target.closest('.col[data-bar]');
+    if (!col) return;
+    const [open] = WB.hoursFor(day);
+    const y = e.clientY - col.getBoundingClientRect().top - PAD;
+    const start = Math.min(WB.hoursFor(day)[1] - WB.STEP, Math.max(open, open + Math.floor(y / PPM / WB.STEP) * WB.STEP));
+    draft = {barber: col.dataset.bar, start, type: 'booking'};
+    openModal(addForm());
+  });
+
+  const showItem = id => {
+    const x = WB.BARBERS.flatMap(b => WB.dayItems(day, b.id)).find(i => i.id === id);
+    if (!x) return;
+    const b = WB.barber(x.barber), time = `${WB.hhmm(x.start)}–${WB.hhmm(x.start + x.dur)}`;
+    const body = x.kind === 'block'
+      ? `<h2 id="mTitle">${E(x.reason)}</h2><p class="sub">${E(b.name)} · ${time}</p>`
+      : `<h2 id="mTitle">${E(x.name)}</h2><p class="sub">${E(b.name)} · ${E(shortDay(day))}</p>
+        <dl><dt>Service</dt><dd>${E(WB.service(x.service).n)} · €${WB.service(x.service).p}</dd><dt>Time</dt><dd>${time}</dd>
+        <dt>Mobile</dt><dd>${E(x.phone || 'Not given')}</dd>${x.note ? `<dt>Note</dt><dd>${E(x.note)}</dd>` : ''}
+        <dt>Booked</dt><dd>${x.source === 'shop' ? 'In the shop or by phone' : 'Online'}${x.id.startsWith('WB-') ? ` · ref ${E(x.id)}` : ''}</dd></dl>`;
+    openModal(body + `<div class="acts"><button class="btn" data-close>Close</button><button class="btn warn" data-remove="${E(x.id)}">${x.kind === 'block' ? 'Remove block' : 'Cancel appointment'}</button></div>`);
+  };
+
+  modal.addEventListener('click', e => {
+    const t = e.target.closest('button'); if (!t) return;
+    if ('close' in t.dataset) closeModal();
+    else if (t.dataset.type) { draft.start = +document.getElementById('mStart').value; draft.type = t.dataset.type; modal.innerHTML = addForm(); }
+    else if (t.dataset.remove) { WB.cancel(t.dataset.remove); closeModal(); render(); }
+    else if ('save' in t.dataset) save();
+  });
+
+  const save = () => {
+    const err = document.getElementById('mErr');
+    const start = +document.getElementById('mStart').value;
+    let r;
+    if (draft.type === 'block') {
+      r = WB.block({date:day, barber:draft.barber, start, dur:+document.getElementById('mDur').value, reason:document.getElementById('mReason').value.trim() || 'Blocked'});
+    } else {
+      const name = document.getElementById('mName').value.trim();
+      if (!name) { err.textContent = 'Add a name so you know who is in the chair.'; return; }
+      const svcId = document.getElementById('mSvc').value;
+      const s = WB.service(svcId);
+      const h = WB.hoursFor(day);
+      if (start + s.m > h[1]) { err.textContent = `That runs past closing at ${WB.hhmm(h[1])}.`; return; }
+      r = WB.book({date:day, barber:draft.barber, start, service:svcId, name, phone:document.getElementById('mPhone').value.trim(), source:'shop'});
+    }
+    if (!r.ok) { err.textContent = 'That clashes with something already in the diary. Pick another time or a shorter length.'; return; }
+    closeModal(); render();
+  };
+
+  const move = n => { day = WB.addDays(day, n); render(); };
+  document.getElementById('prev').addEventListener('click', () => move(-1));
+  document.getElementById('next').addEventListener('click', () => move(1));
+  document.getElementById('todayBtn').addEventListener('click', () => { day = WB.today(); render(); });
+  document.getElementById('pick').addEventListener('change', e => { if (e.target.value) { day = e.target.value; render(); } });
+  document.getElementById('resetBtn').addEventListener('click', () => { WB.reset(); render(); });
+  WB.onChange(render);              // a booking made on the website in another tab appears here straight away
+  setInterval(() => { if (!veil.classList.contains('open')) render(); }, 60000);  // keep the "now" line moving
+  render();
+}
+</script>
+</body>
+</html>
