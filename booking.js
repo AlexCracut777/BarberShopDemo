@@ -151,7 +151,23 @@ window.WB = (() => {
   const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const initials = n => n.split(/\s+/).map(w => w[0]).join('').slice(0, 2).toUpperCase();
 
+  /* ---------- barber portrait: the photo if set, otherwise a lit head-and-shoulders placeholder ---------- */
+  let faceN = 0;
+  const TONES = [['#6a4528', '#1c120b'], ['#4e3a2a', '#150e09'], ['#5d4631', '#19110a']];
+  const face = (b, o = {}) => {
+    if (b.photo) return `<img src="${esc(b.photo)}" alt="${o.alt ? esc(b.name) : ''}" loading="lazy">`;
+    const i = Math.max(0, BARBERS.indexOf(b)) % TONES.length, id = 'wbf' + (faceN++);
+    const w = o.w || 160, h = o.h || 100, cx = w / 2, f = n => +n.toFixed(1);
+    return `<svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="xMidYMid slice" role="img" aria-label="${esc(b.name)}, photo to come"><defs>` +
+      `<radialGradient id="${id}b" cx="50%" cy="28%" r="80%"><stop offset="0" stop-color="${TONES[i][0]}"/><stop offset="1" stop-color="${TONES[i][1]}"/></radialGradient>` +
+      `<linearGradient id="${id}s" gradientUnits="userSpaceOnUse" x1="0" y1="${f(h * .18)}" x2="0" y2="${f(h * .75)}"><stop offset="0" stop-color="#3b2918"/><stop offset=".45" stop-color="#150e09"/><stop offset="1" stop-color="#0e0906"/></linearGradient></defs>` +
+      `<rect width="${w}" height="${h}" fill="url(#${id}b)"/><g fill="url(#${id}s)">` +
+      `<ellipse cx="${cx}" cy="${f(h * .36)}" rx="${f(h * .145)}" ry="${f(h * .175)}"/>` +
+      `<path d="M${f(cx - h * .085)} ${f(h * .5)}H${f(cx + h * .085)}L${f(cx + h * .1)} ${f(h * .68)}H${f(cx - h * .1)}Z"/>` +
+      `<path d="M${f(cx - h * .46)} ${h + 2}C${f(cx - h * .45)} ${f(h * .8)} ${f(cx - h * .32)} ${f(h * .66)} ${f(cx - h * .12)} ${f(h * .64)}H${f(cx + h * .12)}C${f(cx + h * .32)} ${f(h * .66)} ${f(cx + h * .45)} ${f(h * .8)} ${f(cx + h * .46)} ${h + 2}Z"/></g></svg>`;
+  };
+
   return {SERVICES, BARBERS, HOURS, STEP, DAYS_AHEAD, service, barber, today, addDays, fromKey, dkey, hhmm, dayLabel,
-    hoursFor, works, dayItems, isFree, slots, nextFree, book, block, cancel, find, reset, esc, initials,
+    hoursFor, works, dayItems, isFree, slots, nextFree, book, block, cancel, find, reset, esc, initials, face,
     onChange: f => subs.push(f)};
 })();
